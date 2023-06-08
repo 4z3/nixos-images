@@ -3,6 +3,7 @@
 
   inputs.nixos-unstable.url = "github:NixOS/nixpkgs/nixos-unstable-small";
   inputs.nixos-2211.url = "github:NixOS/nixpkgs/release-22.11";
+  inputs.nixos-2305.url = "github:NixOS/nixpkgs/release-23.05";
   inputs.disko.url = "github:nix-community/disko";
 
   nixConfig.extra-substituters = [
@@ -12,7 +13,7 @@
     "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
   ];
 
-  outputs = { self, nixos-unstable, nixos-2211, disko }: let
+  outputs = { self, nixos-unstable, nixos-2211, nixos-2305, disko }: let
     supportedSystems = [ "aarch64-linux" "x86_64-linux" ];
     forAllSystems = nixos-unstable.lib.genAttrs supportedSystems;
   in {
@@ -23,8 +24,10 @@
     in {
       netboot-nixos-unstable = netboot nixos-unstable;
       netboot-nixos-2211 = netboot nixos-2211;
+      netboot-nixos-2305 = netboot nixos-2305;
       kexec-installer-nixos-unstable = kexec-installer nixos-unstable [];
       kexec-installer-nixos-2211 = kexec-installer nixos-2211 [];
+      kexec-installer-nixos-2305 = kexec-installer nixos-2305 [];
 
       kexec-installer-nixos-unstable-noninteractive = kexec-installer nixos-unstable [ 
         { system.kexec-installer.name = "nixos-kexec-installer-noninteractive"; }
@@ -34,9 +37,14 @@
         { system.kexec-installer.name = "nixos-kexec-installer-noninteractive"; }
         self.nixosModules.noninteractive 
       ];
+      kexec-installer-nixos-2305-noninteractive = kexec-installer nixos-2305 [
+        { system.kexec-installer.name = "nixos-kexec-installer-noninteractive"; }
+        self.nixosModules.noninteractive
+      ];
 
       netboot-installer-nixos-unstable = netboot-installer nixos-unstable;
       netboot-installer-nixos-2211 = netboot-installer nixos-2211;
+      netboot-installer-nixos-2305 = netboot-installer nixos-2305;
     });
     nixosModules = {
       kexec-installer = ./nix/kexec-installer/module.nix;
@@ -58,6 +66,9 @@
       '';
       kexec-installer-2211 = nixos-2211.legacyPackages.x86_64-linux.callPackage ./nix/kexec-installer/test.nix {
         kexecTarball = self.packages.x86_64-linux.kexec-installer-nixos-2211-noninteractive;
+      };
+      kexec-installer-2305 = nixos-2305.legacyPackages.x86_64-linux.callPackage ./nix/kexec-installer/test.nix {
+        kexecTarball = self.packages.x86_64-linux.kexec-installer-nixos-2305-noninteractive;
       };
     };
   };
